@@ -1,8 +1,7 @@
-<!DOCTYPE html>
-<html lang="en">
+<html> 
 <head>
     <meta charset="UTF-8">
-    <title>Dealership Review</title>
+    <title>Contact Us</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
@@ -12,12 +11,16 @@
     <script src="https://unpkg.com/bootstrap-table@1.18.2/dist/extensions/filter-control/bootstrap-table-filter-control.min.js"></script>
 
 </head>
-
-    <body>
-    <!--Add a nav bar here -->
-    {% include "nav_bar.html" %}
-    <!--Add a dealer table here -->
-
-    </body>
-    {% include "footer.html" %}
+{% include "nav_bar.html" %}
+<div class="col-md-6">
+    <div class="card">
+        <div class="card-body">
+            <h4 class="card-title">Contact Us</h4>
+            <ul class="list-unstyled">
+                <li>Email: <a href="mailto:best@bestcars.com">best@bestcars.com</a></li>
+                <li>Phone: +1 (123) 456-7890</li>
+            </ul>
+        </div>
+    </div>
+</div>
 </html>
