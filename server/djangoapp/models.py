@@ -7,12 +7,11 @@ from django.utils.timezone import now
 
 class CarMake(models.Model):
     name = models.CharField(null=False, max_length=100, default='car name', primary_key=True)
-    description = models.TextField
-    producer = models.CharField
+    description = models.TextField(max_length=100, default=' ')
 
     # Create a toString method for object string representation
     def __str__(self):
-        return self.name + " produced by " + self.producer + ". Description: " + self.description
+        return self.name
     
 class CarModel(models.Model):
     id = models.IntegerField(default=1,primary_key=True)
