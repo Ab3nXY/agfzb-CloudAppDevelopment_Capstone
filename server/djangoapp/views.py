@@ -3,8 +3,8 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404, render, redirect
 # from .models import related models
-from .models import CarDealer
-from .restapis import get_dealers_from_cf, get_dealer_by_id_from_cf, analyze_review_sentiments
+from .models import CarDealer, CarModel
+from .restapis import get_dealers_from_cf, get_dealer_by_id_from_cf, analyze_review_sentiments, get_dealer_reviews_from_cf, post_request
 from django.contrib.auth import login, logout, authenticate
 from django.contrib import messages
 from datetime import datetime
@@ -132,36 +132,43 @@ def add_review(request, id):
     dealer_url = "https://abenxy0-3000.theiadockernext-0-labs-prod-theiak8s-4-tor01.proxy.cognitiveclass.ai/dealerships/get"
     dealer = get_dealer_by_id_from_cf(dealer_url, id=id)
     context["dealer"] = dealer
+
     if request.method == 'GET':
         # Get cars for the dealer
         cars = CarModel.objects.filter(id=id)
-        print(cars)
         context["cars"] = cars
-        
         return render(request, 'djangoapp/add_review.html', context)
+
     elif request.method == 'POST':
         if request.user.is_authenticated:
             username = request.user.username
-            print(request.POST)
-            payload = dict()
-            car_id = request.POST["car"]
-            car = CarModel.objects.get(pk=car_id)
-            payload["time"] = datetime.utcnow().isoformat()
-            payload["name"] = username
-            payload["dealership"] = id
-            payload["id"] = id
-            payload["review"] = request.POST["content"]
-            payload["purchase"] = False
+            payload = {
+                "time": datetime.utcnow().isoformat(),
+                "name": username,
+                "dealership": id,
+                "review": request.POST["content"],
+                "purchase": False
+            }
+
             if "purchasecheck" in request.POST:
                 if request.POST["purchasecheck"] == 'on':
                     payload["purchase"] = True
+
             payload["purchase_date"] = request.POST["purchasedate"]
+
+            car_id = request.POST["car"]
+            car = CarModel.objects.get(pk=car_id)
             payload["car_make"] = car.make.name
             payload["car_model"] = car.name
             payload["car_year"] = int(car.year.strftime("%Y"))
 
-            new_payload = {}
-            new_payload["review"] = payload
+            json_payload = {"review": payload}
             review_post_url = "https://abenxy0-5000.theiadockernext-0-labs-prod-theiak8s-4-tor01.proxy.cognitiveclass.ai/api/post_review"
-            post_request(review_post_url, new_payload, id=id)
+
+            # Make the post request
+            post_response = post_request(review_post_url, json_payload, dealerId=id)
+
+            # Check the response (you may want to handle the response based on your requirements)
+            print(post_response.json())
+
         return redirect("djangoapp:dealer_details", id=id)

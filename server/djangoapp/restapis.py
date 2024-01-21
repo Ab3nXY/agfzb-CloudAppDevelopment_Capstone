@@ -1,6 +1,6 @@
 import requests
 import json
-from .models import CarDealer
+from .models import CarDealer, DealerReview, CarModel
 from requests.auth import HTTPBasicAuth
 from ibm_cloud_sdk_core.authenticators import IAMAuthenticator
 from ibm_watson import NaturalLanguageUnderstandingV1
@@ -40,15 +40,9 @@ def get_request(url, **kwargs):
 
 # Create a `post_request` to make HTTP POST requests
 # e.g., response = requests.post(url, params=kwargs, json=payload)
-def post_request(url, payload, **kwargs):
-    print(kwargs)
-    print("POST to {} ".format(url))
-    print(payload)
-    response = requests.post(url, params=kwargs, json=payload)
-    status_code = response.status_code
-    print("With status {} ".format(status_code))
-    json_data = json.loads(response.text)
-    return json_data
+def post_request(url, json_payload, **kwargs):
+    response = requests.post(url, params=kwargs, json=json_payload)
+    return response
 
 # Create a get_dealers_from_cf method to get dealers from a cloud function
 # def get_dealers_from_cf(url, **kwargs):
@@ -93,11 +87,11 @@ def get_dealer_reviews_from_cf(url, **kwargs):
         json_result = get_request(url)
 
     if json_result:
-        reviews = json_result["body"]["data"]["docs"]
+        reviews = json_result
 
         for dealer_review in reviews:
             #dealer_review = reviews
-            reviews = json_result["body"]["data"]["docs"]
+            reviews = json_result
 
         for dealer_review_data in reviews:
             print("Dealer Review Data:", dealer_review_data)
@@ -110,7 +104,6 @@ def get_dealer_reviews_from_cf(url, **kwargs):
                                     car_model=dealer_review_data.get("car_model", ""),
                                     car_year=dealer_review_data.get("car_year", None),
                                     sentiment=dealer_review_data.get("sentiment", ""))
-        id=dealer_review_data.get("id", None)
 
             if "id" in dealer_review:
                 review_obj.id = dealer_review["id"]
@@ -140,7 +133,7 @@ def get_dealer_by_id_from_cf(url, id):
         dealer_doc = dealers[0]
         dealer_obj = CarDealer(address=dealer_doc["address"], city=dealer_doc["city"],
                                 id=dealer_doc["id"], lat=dealer_doc["lat"], long=dealer_doc["long"],
-                                
+                                short_name=dealer_doc["short_name"], full_name=dealer_doc["full_name"],
                                 st=dealer_doc["st"], zip=dealer_doc["zip"])
     return dealer_obj
 

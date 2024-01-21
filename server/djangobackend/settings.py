@@ -28,7 +28,7 @@ DEBUG = True
 
 APPEND_SLASH = True
 
-ALLOWED_HOSTS = ["localhost:8000","localhost","https://abenxy0-8000.theiadocker-2-labs-prod-theiak8s-4-tor01.proxy.cognitiveclass.ai"]
+ALLOWED_HOSTS = ["localhost", "https://abenxy0-8000.theiadocker-2-labs-prod-theiak8s-4-tor01.proxy.cognitiveclass.ai"]
 CSRF_TRUSTED_ORIGINS = ['https://abenxy0-8000.theiadockernext-0-labs-prod-theiak8s-4-tor01.proxy.cognitiveclass.ai', 'https://abenxy0-3000.theiadockernext-0-labs-prod-theiak8s-4-tor01.proxy.cognitiveclass.ai/dealerships/get']
 
 
