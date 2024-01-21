@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 import os
 from pathlib import Path
 
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -27,15 +28,16 @@ DEBUG = True
 
 APPEND_SLASH = True
 
-ALLOWED_HOSTS = ['localhost','127.0.0.1']
-
-CSRF_TRUSTED_ORIGINS = ['https://abenxy0-8000.theiadockernext-0-labs-prod-theiak8s-4-tor01.proxy.cognitiveclass.ai']
+ALLOWED_HOSTS = ["localhost:8000","localhost","https://abenxy0-8000.theiadocker-2-labs-prod-theiak8s-4-tor01.proxy.cognitiveclass.ai"]
+CSRF_TRUSTED_ORIGINS = ['https://abenxy0-8000.theiadockernext-0-labs-prod-theiak8s-4-tor01.proxy.cognitiveclass.ai', 'https://abenxy0-3000.theiadockernext-0-labs-prod-theiak8s-4-tor01.proxy.cognitiveclass.ai/dealerships/get']
 
 
 # Application definition
 
 INSTALLED_APPS = [
     'djangoapp.apps.DjangoappConfig',
+    # 'djangoapp',
+    # 'djangobackend',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
