@@ -7,28 +7,67 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
 </head>
 
-    <body>
+<body>
 
-    <a class="btn btn-link" href="{% url 'djangoapp:add_review' dealer.id%}">Add Review</a>
-    <h2>{{ dealer.full_name }}</h2>
-    <p>City: {{ dealer.city }}</p>
-    <p>Address: {{ dealer.address }}</p>
-    <p>Zip: {{ dealer.zip }}</p>
-    <p>State: {{ dealer.st }}</p>
-
-    <!-- Display reviews as cards -->
-    {% for review in reviews %}
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">{{ review.name }}</h5>
-                <p class="card-text">{{ review.review }}</p>
-                <!-- Add other review details here -->
-                <p class="card-text">Sentiment: {{ review.sentiment }}</p>
+    <nav class="navbar navbar-light bg-light">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="{% url 'djangoapp:index' %}">Best Cars</a>
             </div>
+            <ul class="nav navbar-nav navbar-right">
+    
+                <div class="input-group">
+                    {% if user.is_authenticated %}
+                    <a class="btn btn-link" href="{% url 'djangoapp:add_review' dealer.id %}">Add Review</a>
+                        <!-- Display user's first name or username -->
+                        <span class="navbar-text">{{ user.username }}</span>
+    
+                        <!-- Signout button/link -->
+                        <a class="btn btn-link" href="{% url 'djangoapp:logout' %}">Logout</a>
+    
+                        <!-- Add any other authenticated user-specific items here -->
+                    {% else %}
+                        <!-- Login and Signup form -->
+                        <form class="form-inline" action="{% url 'djangoapp:login' %}" method="post">
+                            {% csrf_token %}   
+                            <input type="text" class="form-control" placeholder="Username" name="username">
+                            <input type="password" class="form-control" placeholder="Password" name="psw">
+                            <button class="btn btn-primary" type="submit">Login</button>
+                        </form>  
+                        
+                        <a class="btn btn-link" href="{% url 'djangoapp:registration' %}">Sign Up</a>
+                    {% endif %}
+    
+                    <!-- Common navigation item -->
+                    <a class="btn btn-link" href="{% url 'djangoapp:about-us' %}">About Us</a>
+                </div>
+    
+            </ul>
         </div>
-    {% endfor %}
-    <!-- Add reviews as cards -->
+    </nav>
 
-    </body>
+    <h2>Reviews for {{ dealer.full_name }}</h2>
 
+    <!-- Display reviews as cards in columns -->
+    <div class="card-columns">
+        {% for review in reviews %}
+            <div class="card">
+                {% if review.sentiment == 'positive' %}
+                    <img class="card-img-top" src="{% static 'emoji/positive.png' %}" alt="Positive Emoji">
+                {% elif review.sentiment == 'neutral' %}
+                    <img class="card-img-top" src="{% static 'emoji/neutral.png' %}" alt="Neutral Emoji">
+                {% elif review.sentiment == 'negative' %}
+                    <img class="card-img-top" src="{% static 'emoji/negative.png' %}" alt="Negative Emoji">
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ review.car_model }} - {{ review.car_make }} ({{ review.car_year }})</h5>
+                    <p class="card-text">{{ review.review }}</p>
+                    <p class="card-text">Sentiment: {{ review.sentiment }}</p>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    <!-- End reviews as cards -->
+
+</body>
 </html>
