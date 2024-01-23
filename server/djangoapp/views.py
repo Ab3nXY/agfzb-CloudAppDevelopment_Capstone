@@ -94,7 +94,7 @@ def get_dealerships(request):
         context = {}
         url = "https://abenxy0-3000.theiadockernext-0-labs-prod-theiak8s-4-tor01.proxy.cognitiveclass.ai/dealerships/get"
         dealerships = get_dealers_from_cf(url)
-        context["dealership_list"] = dealerships
+        context["dealers"] = dealerships
         return render(request, 'djangoapp/index.html', context)
 
 
@@ -115,14 +115,17 @@ def get_dealer_details(request, id):
         # Retrieve reviews
         review_url = f"https://abenxy0-5000.theiadockernext-0-labs-prod-theiak8s-4-tor01.proxy.cognitiveclass.ai/api/get_reviews?id={id}"
         reviews = get_dealer_reviews_from_cf(review_url, id=id)
-        context["reviews"] = reviews
 
-        # Analyze sentiments for each review
+        # Analyze sentiments for each review and store in the review object
         for review in reviews:
             sentiment = analyze_review_sentiments(review.review)
             review.sentiment = sentiment
+
+        # Pass the reviews with sentiment to the template
+        context["reviews"] = reviews
         
         return render(request, 'djangoapp/dealer_details.html', context)
+
 
 # Create a `add_review` view to submit a review
 # def add_review(request, dealer_id):
