@@ -13,21 +13,31 @@ import time
 #
 
 def get_request(url, **kwargs):
+    # If argument contain API KEY
+    api_key = kwargs.get("api_key")
     print("GET from {} ".format(url))
-    
     try:
-        # Call get method of requests library with URL and parameters
-        response = requests.get(url, headers={'Content-Type': 'application/json'}, params=kwargs)
-        response.raise_for_status()  # Raise HTTPError for bad responses (4xx and 5xx)
-    except requests.exceptions.RequestException as e:
+        if api_key:
+            params = dict()
+            params["text"] = kwargs["text"]
+            params["version"] = kwargs["version"]
+            params["features"] = kwargs["features"]
+            params["return_analyzed_text"] = kwargs["return_analyzed_text"]
+            response = requests.get(url, params=params, headers={'Content-Type': 'application/json'},
+                                    auth=HTTPBasicAuth('apikey', api_key))
+        else:
+            # Call get method of requests library with URL and parameters
+            response = requests.get(url, headers={'Content-Type': 'application/json'},
+                                    params=kwargs)
+    except:
         # If any error occurs
-        print("Network exception occurred:", str(e))
-        return None
+        print("Network exception occurred")
 
     status_code = response.status_code
     print("With status {} ".format(status_code))
-    json_data = response.json()  # Use .json() to parse JSON directly
+    json_data = json.loads(response.text)
     return json_data
+
 
 # Create a `post_request` to make HTTP POST requests
 # e.g., response = requests.post(url, params=kwargs, json=payload)
@@ -74,11 +84,23 @@ def get_dealers_from_cf(url, **kwargs):
 # def get_dealer_by_id_from_cf(url, dealerId):
 # - Call get_request() with specified arguments
 # - Parse JSON results into a DealerView object list
+
+def analyze_review_sentiments(dealerreview):
+    url = "https://api.au-syd.natural-language-understanding.watson.cloud.ibm.com/instances/1abb3d6a-8aef-4f81-a4e2-6dfc56e4c755"
+    api_key = "M4ULkPXBxbNevS4JgETFNc_NxuCZcb8HCbyvvvp5eK5Y"
+    authenticator = IAMAuthenticator(api_key)
+    natural_language_understanding = NaturalLanguageUnderstandingV1(version='2021-08-01',authenticator=authenticator)
+    natural_language_understanding.set_service_url(url)
+    response = natural_language_understanding.analyze( dealerreview=dealerreview+"hello hello hello",features=Features(sentiment=SentimentOptions(targets=[dealerreview+"hello hello hello"]))).get_result()
+    label=json.dumps(response, indent=2)
+    label = response['sentiment']['document']['label']
+
+
 def get_dealer_reviews_from_cf(url, **kwargs):
     results = []
-    id = kwargs.get("id")
-    if id:
-        json_result = get_request(url, id=id)
+    dealer_id = kwargs.get("id")
+    if dealer_id:
+        json_result = get_request(url, id=dealer_id)
     else:
         json_result = get_request(url)
 
@@ -98,15 +120,14 @@ def get_dealer_reviews_from_cf(url, **kwargs):
                 car_year=dealer_review_data.get("car_year", None),
                 sentiment=dealer_review_data.get("sentiment", "")
             )
-            sentiment = analyze_review_sentiments(review_obj.review)
-            review_obj.sentiment = sentiment
+            review_obj.sentiment = analyze_review_sentiments(review_obj.review)
             results.append(review_obj)
 
     return results
 
 
-def get_dealer_by_id_from_cf(url, id):
-    json_result = get_request(url, id=id)
+def get_dealer_by_id_from_cf(url, dealer_id):
+    json_result = get_request(url, id=dealer_id)
 
     if json_result:
         dealers = json_result
@@ -114,7 +135,7 @@ def get_dealer_by_id_from_cf(url, id):
     
         dealer_doc = dealers[0]
         dealer_obj = CarDealer(address=dealer_doc["address"], city=dealer_doc["city"],
-                                id=dealer_doc["id"], lat=dealer_doc["lat"], long=dealer_doc["long"], full_name=dealer_doc["full_name"],
+                                id=dealer_doc["id"], lat=dealer_doc["lat"], long=dealer_doc["long"], full_name=dealer_doc["full_name"], short_name=dealer_doc["short_name"],
                                 st=dealer_doc["st"], zip=dealer_doc["zip"])
     return dealer_obj
 
@@ -122,14 +143,5 @@ def get_dealer_by_id_from_cf(url, id):
 # def analyze_review_sentiments(text):
 # - Call get_request() with specified arguments
 # - Get the returned sentiment label such as Positive or Negative
-def analyze_review_sentiments(text):
-    url = "https://api.au-syd.natural-language-understanding.watson.cloud.ibm.com/instances/1abb3d6a-8aef-4f81-a4e2-6dfc56e4c755"
-    api_key = "gAtNJWFCsBbCRijGTPe9aY0BKB-umH-q0lm1ntbCFDuF"
-    authenticator = IAMAuthenticator(api_key)
-    natural_language_understanding = NaturalLanguageUnderstandingV1(version='2021-08-01',authenticator=authenticator)
-    natural_language_understanding.set_service_url(url)
-    response = natural_language_understanding.analyze( text=text+"hello hello hello",features=Features(sentiment=SentimentOptions(targets=[text+"hello hello hello"]))).get_result()
-    label=json.dumps(response, indent=2)
-    label = response['sentiment']['document']['label']
 
 
