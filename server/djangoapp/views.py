@@ -107,7 +107,7 @@ def get_dealer_details(request, dealer_id):
         context["dealer"] = dealer
     
         # Retrieve reviews
-        review_url = f"https://abenxy0-5000.theiadockernext-0-labs-prod-theiak8s-4-tor01.proxy.cognitiveclass.ai/api/get_reviews?id={dealer_id}"
+        review_url = f"https://abenxy0-5000.theiadockernext-0-labs-prod-theiak8s-4-tor01.proxy.cognitiveclass.ai/api/get_reviews?dealer_id={dealer_id}"
         reviews = get_dealer_reviews_from_cf(review_url, dealer_id=dealer_id)
         print(reviews)
         context["reviews"] = reviews
@@ -125,7 +125,7 @@ def get_dealer_details(request, dealer_id):
 def add_review(request, dealer_id):
     context = {}
     dealer_url = "https://abenxy0-3000.theiadockernext-0-labs-prod-theiak8s-4-tor01.proxy.cognitiveclass.ai/dealerships/get"
-    dealer = get_dealer_by_id_from_cf(dealer_url, dealer_id=dealer_id)
+    dealer = get_dealer_by_id_from_cf(dealer_url, dealer_id)
     context["dealer"] = dealer
 
     if request.method == 'GET':
@@ -156,14 +156,12 @@ def add_review(request, dealer_id):
             payload["car_make"] = car.make.name
             payload["car_model"] = car.name
             payload["car_year"] = int(car.year.strftime("%Y"))
-
             json_payload = {"review": payload}
             review_post_url = "https://abenxy0-5000.theiadockernext-0-labs-prod-theiak8s-4-tor01.proxy.cognitiveclass.ai/api/post_review"
 
             # Make the post request
-            post_response = post_request(review_post_url, json_payload, dealerId=dealer_id)
+            post_response = post_request(review_post_url, json_payload, dealer_id=dealer_id)
 
             # Check the response (you may want to handle the response based on your requirements)
-            print(post_response.json())
 
         return redirect("djangoapp:dealer_details", dealer_id=dealer_id)
