@@ -110,32 +110,45 @@ def get_dealer_by_id_from_cf(url, dealer_id):
 
 def get_dealer_reviews_from_cf(url, dealer_id):
     results = []
-    if dealer_id:
-        json_result = get_request(url, id=dealer_id)
-    else:
-        json_result = get_request(url)
+    json_result = get_request(url, id=dealer_id)
+    print(json_result) 
 
-    if json_result:
-        reviews = json_result
-
-        for dealer_review_data in reviews:
-            print("Dealer Review Data:", dealer_review_data)
-            review_obj = DealerReview(
-                id=dealer_review_data["id"],
-                dealership=dealer_review_data["dealership"],
-                name=dealer_review_data["name"],
-                purchase=dealer_review_data["purchase"],
-                review=dealer_review_data["review"],
-                purchase_date=dealer_review_data.get("purchase_date"),
-                car_make=dealer_review_data.get("car_make"),
-                car_model=dealer_review_data.get("car_model"),
-                car_year=dealer_review_data.get("car_year"),
-                sentiment=dealer_review_data.get("sentiment")
-            )
+    if isinstance(json_result, list):
+        for review in json_result:
+            if review['purchase']:
+                review_obj = DealerReview(
+                    dealership=review['dealership'], 
+                    purchase=review['purchase'], 
+                    purchase_date=review['purchase_date'], 
+                    name=review['name'], 
+                    review=review['review'], 
+                    car_make=review['car_make'], 
+                    car_model=review['car_model'], 
+                    car_year=review['car_year'], 
+                    id=review['id'], 
+                    sentiment='sentiment'
+                )
+            else:
+                review_obj = DealerReview(
+                    dealership=review['dealership'], 
+                    purchase=review['purchase'], 
+                    purchase_date=None, 
+                    name=review['name'], 
+                    review=review['review'], 
+                    car_make=review['car_make'], 
+                    car_model=review['car_model'], 
+                    car_year=review['car_year'], 
+                    id=review['id'], 
+                    sentiment='sentiment'
+                )
+            
             review_obj.sentiment = analyze_review_sentiments(review_obj.review)
             results.append(review_obj)
+            print("Sentiments: ", review_obj.sentiment)
+            print("Results: ", review_obj)
 
     return results
+
 
 # Create an `analyze_review_sentiments` method to call Watson NLU and analyze text
 # def analyze_review_sentiments(text):
@@ -148,7 +161,14 @@ def analyze_review_sentiments(dealerreview):
     authenticator = IAMAuthenticator(api_key)
     natural_language_understanding = NaturalLanguageUnderstandingV1(version='2021-08-01',authenticator=authenticator)
     natural_language_understanding.set_service_url(url)
-    response = natural_language_understanding.analyze( dealerreview=dealerreview,features=Features(sentiment=SentimentOptions(targets=[dealerreview]))).get_result()
-    label=json.dumps(response, indent=2)
-    label = response['sentiment']['document']['label']
+    try:
+        response = natural_language_understanding.analyze( text=dealerreview,features=Features(sentiment=SentimentOptions(targets=[dealerreview]))).get_result()
+        label=json.dumps(response, indent=2)
+        label = response['sentiment']['document']['label']
+
+        return(label)
+
+    except:
+        print("Can't analyze the sentiment")
+        return 'none'
 
